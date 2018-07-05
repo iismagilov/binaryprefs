@@ -70,6 +70,7 @@ public final class BinaryPreferencesBuilder {
     private File baseDir;
     private String name = DEFAULT_NAME;
     private boolean supportInterProcess = false;
+    private boolean allowBuildOnBackgroundThread = false;
     private MemoryCacheMode memoryCacheMode = MemoryCacheMode.LAZY;
     private KeyEncryption keyEncryption = KeyEncryption.NO_OP;
     private ValueEncryption valueEncryption = ValueEncryption.NO_OP;
@@ -246,6 +247,16 @@ public final class BinaryPreferencesBuilder {
     }
 
     /**
+     * Allows to build instance of {@link BinaryPreferences} on background thread
+     *
+     * @return current builder instance
+     */
+    public BinaryPreferencesBuilder allowBuildOnBackgroundThread() {
+        allowBuildOnBackgroundThread = true;
+        return this;
+    }
+
+    /**
      * Builds preferences instance with predefined or default parameters.
      * This method will fails if invocation performed not in the main thread.
      *
@@ -253,7 +264,7 @@ public final class BinaryPreferencesBuilder {
      * @see PreferencesInitializationException
      */
     public Preferences build() {
-        if (Looper.myLooper() != Looper.getMainLooper()) {
+        if (!allowBuildOnBackgroundThread && Looper.myLooper() != Looper.getMainLooper()) {
             throw new PreferencesInitializationException(INCORRECT_THREAD_INIT_MESSAGE);
         }
         BinaryPreferences preferences = createInstance();
